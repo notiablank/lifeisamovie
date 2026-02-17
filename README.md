@@ -6,7 +6,7 @@ A cinematic life-journaling app.
 
 ```
 apps/
-  ios/    — SwiftUI iOS app (Xcode project, iOS 17+)
+  ios/    — SwiftUI iOS app (Xcode project, iOS 17+, Swift 6)
   api/    — Fastify backend (coming soon)
 ```
 
@@ -14,10 +14,21 @@ apps/
 
 ### iOS App
 
-Open `apps/ios/LifeIsAMovie.xcodeproj` in Xcode 15+ and run on a simulator or device.
+Open `apps/ios/LifeIsAMovie.xcodeproj` in Xcode 16+ and run on a simulator or device.
+
+The project follows an MVVM architecture:
+
+```
+LifeIsAMovie/
+  Views/          — SwiftUI views
+  ViewModels/     — View models
+  Models/         — Data models
+  Services/       — Network and data services
+  Assets.xcassets — Asset catalog
+```
 
 ## CI
 
 GitHub Actions workflows live in `.github/workflows/`:
 
-- **ios.yml** — Builds the iOS app on push/PR changes to `apps/ios/`
+- **ios.yml** — Builds and tests the iOS app on push/PR changes to `apps/ios/`
