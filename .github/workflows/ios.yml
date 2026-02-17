@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-26
     defaults:
       run:
         working-directory: apps/ios
@@ -41,6 +41,16 @@ jobs:
       - name: Build
         run: |
           xcodebuild build \
+            -project LifeIsAMovie.xcodeproj \
+            -scheme LifeIsAMovie \
+            -destination 'platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}' \
+            -quiet \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Test
+        run: |
+          xcodebuild test \
             -project LifeIsAMovie.xcodeproj \
             -scheme LifeIsAMovie \
             -destination 'platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}' \
