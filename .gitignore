@@ -1,14 +1,11 @@
-# Generated Xcode project (regenerate with xcodegen)
-apps/ios/LifeIsAMovie.xcodeproj
-
 # Xcode
-xcuserdata/
-DerivedData/
 build/
+DerivedData/
+*.xcuserdata
+*.xcworkspace/xcuserdata/
 
 # macOS
 .DS_Store
 
-# SwiftPM
-.build/
-Package.resolved
+# Node (for future API)
+node_modules/
