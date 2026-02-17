@@ -1,28 +1,23 @@
-# Life is a Movie
+# Life Is a Movie
 
-A movie tracking and sharing app.
+A cinematic life-journaling app.
 
 ## Monorepo Structure
 
-| Path | Description |
-|------|-------------|
-| `apps/ios/` | SwiftUI iOS app |
-| `apps/api/` | Backend API (coming soon) |
-| `.github/workflows/` | CI/CD pipelines |
+```
+apps/
+  ios/    — SwiftUI iOS app (Xcode project, iOS 17+)
+  api/    — Fastify backend (coming soon)
+```
 
 ## Getting Started
 
 ### iOS App
 
-```bash
-cd apps/ios
-brew install xcodegen
-xcodegen generate
-open LifeIsAMovie.xcodeproj
-```
+Open `apps/ios/LifeIsAMovie.xcodeproj` in Xcode 15+ and run on a simulator or device.
 
-Requires Xcode 16+ and targets iOS 17+.
+## CI
 
-## Linting
+GitHub Actions workflows live in `.github/workflows/`:
 
-SwiftLint config lives at the repo root (`.swiftlint.yml`).
+- **ios.yml** — Builds the iOS app on push/PR changes to `apps/ios/`
