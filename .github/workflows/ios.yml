@@ -1,0 +1,30 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/ios/**']
+  pull_request:
+    paths: ['apps/ios/**']
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: apps/ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project LifeIsAMovie.xcodeproj \
+            -scheme LifeIsAMovie \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -quiet \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
