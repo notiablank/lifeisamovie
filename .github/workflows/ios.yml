@@ -24,7 +24,7 @@ jobs:
           xcodebuild build \
             -project LifeIsAMovie.xcodeproj \
             -scheme LifeIsAMovie \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'platform=iOS Simulator,name=Any iOS Simulator Device' \
             -quiet \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
