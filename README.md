@@ -7,7 +7,7 @@ A cinematic life-journaling app.
 ```
 apps/
   ios/    — SwiftUI iOS app (Xcode project, iOS 17+, Swift 6)
-  api/    — Fastify backend (coming soon)
+  api/    — Fastify backend (Node.js + TypeScript)
 ```
 
 ## Getting Started
@@ -27,8 +27,18 @@ LifeIsAMovie/
   Assets.xcassets — Asset catalog
 ```
 
+### API
+
+```bash
+cd apps/api
+cp .env.example .env
+npm install
+npm run dev
+```
+
 ## CI
 
 GitHub Actions workflows live in `.github/workflows/`:
 
 - **ios.yml** — Builds and tests the iOS app on push/PR changes to `apps/ios/`
+- **backend-ci.yml** — Lints and tests the API on push/PR changes to `apps/api/`
