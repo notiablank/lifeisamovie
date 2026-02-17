@@ -1,0 +1,14 @@
+# Generated Xcode project (regenerate with xcodegen)
+apps/ios/LifeIsAMovie.xcodeproj
+
+# Xcode
+xcuserdata/
+DerivedData/
+build/
+
+# macOS
+.DS_Store
+
+# SwiftPM
+.build/
+Package.resolved
