@@ -16,8 +16,10 @@
   "dependencies": {
     "@fastify/cors": "^11.0.0",
     "@fastify/env": "^5.0.1",
+    "@supabase/supabase-js": "^2.96.0",
     "drizzle-orm": "^0.45.1",
     "fastify": "^5.2.1",
+    "fastify-plugin": "^5.1.0",
     "postgres": "^3.4.8"
   },
   "devDependencies": {
