@@ -16,9 +16,3 @@ export function getDb(): PostgresJsDatabase<typeof schema> {
   return _db;
 }
 
-/** @deprecated Use getDb() for lazy initialization */
-export const db = new Proxy({} as PostgresJsDatabase<typeof schema>, {
-  get(_target, prop, receiver) {
-    return Reflect.get(getDb(), prop, receiver);
-  },
-});

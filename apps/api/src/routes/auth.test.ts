@@ -24,7 +24,7 @@ const mockInsert = vi.fn();
 const mockSelect = vi.fn();
 
 vi.mock("../db/index.js", () => ({
-  db: {
+  getDb: () => ({
     insert: () => ({ values: mockInsert }),
     select: () => ({
       from: () => ({
@@ -33,7 +33,7 @@ vi.mock("../db/index.js", () => ({
         }),
       }),
     }),
-  },
+  }),
 }));
 
 vi.mock("../db/schema.js", () => ({

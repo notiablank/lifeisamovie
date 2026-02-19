@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { createSupabaseClient, createSupabaseAdmin } from "../lib/supabase.js";
 import { requireAuth } from "../plugins/auth.js";
-import { db } from "../db/index.js";
+import { getDb } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
@@ -40,7 +40,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
     // Insert into our users table
     try {
-      await db.insert(users).values({
+      await getDb().insert(users).values({
         email,
         username,
         supabaseId: data.user.id,
@@ -92,7 +92,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   // GET /auth/me
   app.get("/auth/me", async (request, reply) => {
     requireAuth(request);
-    const [profile] = await db
+    const [profile] = await getDb()
       .select()
       .from(users)
       .where(eq(users.supabaseId, request.user!.id))
