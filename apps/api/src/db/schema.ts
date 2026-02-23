@@ -14,6 +14,7 @@ import {
 // ── Users ──────────────────────────────────────────────
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
+  supabaseId: text("supabase_id").unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   username: varchar("username", { length: 50 }).notNull().unique(),
   avatarUrl: text("avatar_url"),

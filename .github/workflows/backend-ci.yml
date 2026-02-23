@@ -24,3 +24,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+        env:
+          DATABASE_URL: postgres://ci:ci@localhost:5432/ci
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: test-service-key
