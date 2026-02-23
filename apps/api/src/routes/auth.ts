@@ -1,23 +1,11 @@
 import type { FastifyPluginAsync } from "fastify";
-import { createSupabaseClient, createSupabaseAdmin } from "../lib/supabase.js";
+import { getSupabaseClient, getSupabaseAdmin } from "../lib/supabase.js";
 import { requireAuth } from "../plugins/auth.js";
 import { getDb } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
-  const getAnonKey = () => {
-    const key = process.env.SUPABASE_ANON_KEY;
-    if (!key) throw { statusCode: 500, message: "SUPABASE_ANON_KEY not configured" };
-    return key;
-  };
-
-  const getServiceKey = () => {
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!key) throw { statusCode: 500, message: "SUPABASE_SERVICE_ROLE_KEY not configured" };
-    return key;
-  };
-
   // POST /auth/signup
   app.post<{
     Body: { email: string; password: string; username: string };
@@ -27,7 +15,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: "email, password, and username are required" });
     }
 
-    const supabase = createSupabaseClient(getAnonKey());
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
@@ -38,7 +26,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: "Signup failed" });
     }
 
-    // Insert into our users table
+    // Insert into our users table — clean up supabase user on failure
     try {
       await getDb().insert(users).values({
         email,
@@ -46,8 +34,13 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         supabaseId: data.user.id,
       });
     } catch (dbError: any) {
-      // If DB insert fails, still return the session but warn
-      request.log.error(dbError, "Failed to insert user row");
+      request.log.error(dbError, "Failed to insert user row, cleaning up Supabase user");
+      try {
+        const admin = getSupabaseAdmin();
+        await admin.auth.admin.deleteUser(data.user.id);
+      } catch (cleanupError: any) {
+        request.log.error(cleanupError, "Failed to clean up orphaned Supabase user %s", data.user.id);
+      }
       return reply.status(500).send({ error: "Failed to create user profile" });
     }
 
@@ -66,7 +59,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: "email and password are required" });
     }
 
-    const supabase = createSupabaseClient(getAnonKey());
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
@@ -79,8 +72,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   // POST /auth/signout
   app.post("/auth/signout", async (request, reply) => {
     requireAuth(request);
-    const supabaseAdmin = createSupabaseAdmin(getServiceKey());
-    const { error } = await supabaseAdmin.auth.admin.signOut(request.user!.id);
+    const admin = getSupabaseAdmin();
+    const { error } = await admin.auth.admin.signOut(request.user!.id);
 
     if (error) {
       return reply.status(400).send({ error: error.message });
@@ -114,7 +107,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: "refresh_token is required" });
     }
 
-    const supabase = createSupabaseClient(getAnonKey());
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase.auth.refreshSession({ refresh_token });
 
     if (error) {

@@ -6,6 +6,7 @@ const mockSignInWithPassword = vi.fn();
 const mockGetUser = vi.fn();
 const mockRefreshSession = vi.fn();
 const mockAdminSignOut = vi.fn();
+const mockAdminDeleteUser = vi.fn();
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: () => ({
@@ -14,7 +15,7 @@ vi.mock("@supabase/supabase-js", () => ({
       signInWithPassword: mockSignInWithPassword,
       getUser: mockGetUser,
       refreshSession: mockRefreshSession,
-      admin: { signOut: mockAdminSignOut },
+      admin: { signOut: mockAdminSignOut, deleteUser: mockAdminDeleteUser },
     },
   }),
 }));
@@ -47,6 +48,7 @@ vi.mock("drizzle-orm", () => ({
 import Fastify from "fastify";
 import authPlugin from "../plugins/auth.js";
 import { authRoutes } from "./auth.js";
+import { _resetClients } from "../lib/supabase.js";
 
 async function buildTestApp() {
   const app = Fastify();
@@ -57,6 +59,7 @@ async function buildTestApp() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  _resetClients();
   process.env.SUPABASE_URL = "https://test.supabase.co";
   process.env.SUPABASE_ANON_KEY = "test-anon-key";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
@@ -112,6 +115,28 @@ describe("POST /auth/signup", () => {
       payload: { email: "test@example.com", password: "pass123", username: "testuser" },
     });
     expect(res.statusCode).toBe(400);
+  });
+
+  it("cleans up supabase user when db insert fails", async () => {
+    mockSignUp.mockResolvedValue({
+      data: {
+        user: { id: "sb-orphan", email: "orphan@example.com" },
+        session: { access_token: "tok" },
+      },
+      error: null,
+    });
+    mockInsert.mockRejectedValue(new Error("unique constraint violation"));
+    mockAdminDeleteUser.mockResolvedValue({ data: null, error: null });
+
+    const app = await buildTestApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/auth/signup",
+      payload: { email: "orphan@example.com", password: "pass123", username: "orphanuser" },
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(mockAdminDeleteUser).toHaveBeenCalledWith("sb-orphan");
   });
 });
 

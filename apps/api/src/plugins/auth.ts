@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
-import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import { createSupabaseClient } from "../lib/supabase.js";
+import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
+import { getSupabaseClient } from "../lib/supabase.js";
 
 export interface AuthUser {
   id: string;
@@ -21,24 +21,29 @@ const authPlugin: FastifyPluginAsync = async (app) => {
     if (!header?.startsWith("Bearer ")) return;
 
     const token = header.slice(7);
-    const anonKey = process.env.SUPABASE_ANON_KEY;
-    if (!anonKey) return;
 
-    const supabase = createSupabaseClient(anonKey);
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) return;
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase.auth.getUser(token);
+      if (error || !data.user) return;
 
-    request.user = {
-      id: data.user.id,
-      email: data.user.email ?? "",
-    };
+      request.user = {
+        id: data.user.id,
+        email: data.user.email ?? "",
+      };
+    } catch {
+      // If supabase client isn't configured, skip auth silently
+      return;
+    }
   });
 };
 
 export default fp(authPlugin, { name: "auth" });
 
-export function requireAuth(request: FastifyRequest) {
+export function requireAuth(request: FastifyRequest): asserts request is FastifyRequest & { user: AuthUser } {
   if (!request.user) {
-    throw { statusCode: 401, message: "Unauthorized" };
+    const err = new Error("Unauthorized") as Error & { statusCode: number };
+    err.statusCode = 401;
+    throw err;
   }
 }
